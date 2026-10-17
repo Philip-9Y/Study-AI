@@ -154,6 +154,7 @@ python tests/render_screenshots.py
 
 ## 开发者文档
 
+- [学习总纲](docs/MASTER_GUIDE.md)：**从这里开始**：全文件地图 + 代码框架 + 12 周系统学习路线
 - [项目文件清单](docs/PROJECT_INVENTORY.md)：每个目录/文件的作用、公开与私有边界、备份说明
 - [系统学习执行计划](docs/STUDY_PLAN.md)：8 周逐周任务、每日节奏、前 7 天安排、验收清单
 - [整体代码框架](docs/CODE_FRAMEWORK.md)：分层图、启动流程、核心类、数据流、改功能对照表

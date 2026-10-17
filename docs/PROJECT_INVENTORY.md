@@ -134,6 +134,7 @@ python -m unittest discover -s tests -t .
 
 | 文件 | 作用 |
 | --- | --- |
+| `MASTER_GUIDE.md` | 总纲：全文件地图 + 代码框架 + 12 周系统学习路线 |
 | `ARCHITECTURE.md` | 架构、线程模型、数据流、数据库、扩展点、技术债 |
 | `CODE_FRAMEWORK.md` | 整体代码框架：分层图、启动流程、核心类、数据流、改功能对照表 |
 | `READING_GUIDE.md` | 源码阅读顺序、断点、三条调用链、练习任务 |
