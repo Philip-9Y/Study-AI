@@ -34,10 +34,12 @@ Study-AI/
 ├── docs/                  # 架构/阅读/学习文档
 ├── plugins/               # 内置插件
 ├── legacy/                # 旧 Tk 版本（仅参考）
-├── backup/                # 本机备份 + DSH 调试归档（gitignore，不上传）
+├── backup/                # 本机源码备份（gitignore，不上传）
 ├── data/                  # 运行时私有数据（不上传）
 └── __pycache__/           # Python 缓存（可删）
 ```
+
+> 同级目录 `..\DSH-debug-20261017\` 是 DSH 调试/配置归档，不属于 Study-AI 项目。
 
 ---
 
@@ -248,7 +250,7 @@ data/
 - `config.json`（Key）
 - `data/`（数据库、截图、日志、记忆）
 - `__pycache__/`、`*.pyc`
-- `backup/`（源码 zip、git bundle、DSH 调试归档；已在 gitignore）
+- `backup/`（源码 zip、git bundle；已在 gitignore）
 
 `.git/` 里保存提交历史；`git status` 干净表示本地与远程同步。
 
@@ -262,9 +264,18 @@ data/
 | --- | --- |
 | `bili-ask-20261017-1917-source.zip` | 源码快照（不含 config/data） |
 | `bili-ask-20261017-1917.bundle` | Git 完整历史 bundle，可 clone 恢复 |
-| `dsh-debug-20261017/` | DSH profile 配置备份 + 旧调试脚本/会话记录（私有，勿公开） |
 
 `backup/README.md` 记录了每项的用途和恢复方式。整个 `backup/` 不会进入 Git。
+
+与 Study-AI 无关的 DSH 调试/配置归档已移到项目外：
+
+```
+..\DSH-debug-20261017\
+├── profile-backup-20261017/
+├── tools/
+├── err.txt
+└── out.txt
+```
 
 ---
 
