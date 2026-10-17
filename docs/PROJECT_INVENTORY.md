@@ -238,8 +238,8 @@ data/
 当前仓库：https://github.com/Philip-9Y/Study-AI
 
 - 分支：`main`
-- 提交：`e5999fc`
-- 跟踪文件：68 个
+- 提交：以 `git log --oneline -1` 为准
+- 跟踪文件：69 个
 - 内容：`app.py`、`core/`、`ui/`、`tests/`、`docs/`、`plugins/`、`assets/`、`legacy/`、`README.md`、`requirements.txt`、`start.bat`、`config.example.json`、`.gitignore`
 
 **不在 GitHub：**
