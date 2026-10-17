@@ -1,4 +1,4 @@
-# B站学习助手（bili-ask）· 对话式 Agent 桌面版
+# Study-AI（B站学习助手）· 对话式 Agent 桌面版
 
 一个长在桌面上的学习 Agent：**直接对话让它做事**，或双击路飞桌宠截图问视频内容。工具调用以卡片形式出现在对话里，笔记单独管理、随时可改。
 
@@ -105,7 +105,7 @@ python app.py
 ## 数据位置
 
 ```
-bili-ask/
+Study-AI/
 ├── config.json                  # 配置（含 Key，已 gitignore）
 ├── data/
 │   ├── bili_ask.db              # 会话 / 消息（含工具步骤 meta）/ 笔记 / 记忆

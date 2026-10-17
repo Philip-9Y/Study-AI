@@ -18,7 +18,7 @@
 ## 1. 顶层结构
 
 ```
-bili-ask/
+Study-AI/
 ├── .git/                  # Git 版本库（本地）
 ├── .gitignore             # 忽略 config.json / data/ / __pycache__
 ├── app.py                 # 程序入口
@@ -277,7 +277,7 @@ data/
 ## 15. 如何自己核对
 
 ```powershell
-cd "D:\deepseek harness workplace\usually\bili-ask"
+cd "D:\deepseek harness workplace\usually\Study-AI"
 
 # 看所有文件（含隐藏）
 Get-ChildItem -Force -Recurse | Select-Object FullName, Length

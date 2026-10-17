@@ -10,7 +10,7 @@
 ### 环境
 
 ```powershell
-cd "D:\deepseek harness workplace\usually\bili-ask"
+cd "D:\deepseek harness workplace\usually\Study-AI"
 python -m pip install -r requirements.txt
 ```
 

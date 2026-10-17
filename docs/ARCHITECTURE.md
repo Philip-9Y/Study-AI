@@ -63,7 +63,7 @@
 ## 3. 目录与模块职责
 
 ```
-bili-ask/
+Study-AI/
 ├── app.py                     # 入口：单实例、QApplication、组件装配、热键、托盘、退出
 ├── core/                      # 与界面无关的业务核心
 │   ├── config.py              # 配置读写（config.json）
