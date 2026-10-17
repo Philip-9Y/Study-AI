@@ -1,0 +1,9 @@
+{
+  "api_key": "sk-在这里填你的-key",
+  "base_url": "https://api.deepseek.com",
+  "model": "deepseek-flash",
+  "max_tokens": 1500,
+  "temperature": 0.6,
+  "save_captures": true,
+  "thinking": false
+}
