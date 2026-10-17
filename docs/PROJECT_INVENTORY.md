@@ -20,7 +20,7 @@
 ```
 Study-AI/
 ├── .git/                  # Git 版本库（本地）
-├── .gitignore             # 忽略 config.json / data/ / __pycache__
+├── .gitignore             # 忽略 config.json / data/ / __pycache__ / backup/
 ├── app.py                 # 程序入口
 ├── config.json            # 本机配置（含 API Key，私有）
 ├── config.example.json    # 配置模板（公开）
@@ -34,6 +34,7 @@ Study-AI/
 ├── docs/                  # 架构/阅读/学习文档
 ├── plugins/               # 内置插件
 ├── legacy/                # 旧 Tk 版本（仅参考）
+├── backup/                # 本机备份 + DSH 调试归档（gitignore，不上传）
 ├── data/                  # 运行时私有数据（不上传）
 └── __pycache__/           # Python 缓存（可删）
 ```
@@ -247,20 +248,23 @@ data/
 - `config.json`（Key）
 - `data/`（数据库、截图、日志、记忆）
 - `__pycache__/`、`*.pyc`
-- 项目外的备份 zip/bundle
+- `backup/`（源码 zip、git bundle、DSH 调试归档；已在 gitignore）
 
 `.git/` 里保存提交历史；`git status` 干净表示本地与远程同步。
 
 ---
 
-## 13. 本机项目外的备份
+## 13. 本机备份（backup/，已 gitignore）
 
-在 `D:\deepseek harness workplace\usually\`：
+在 `Study-AI/backup/`：
 
-| 文件 | 说明 |
+| 文件/目录 | 说明 |
 | --- | --- |
 | `bili-ask-20261017-1917-source.zip` | 源码快照（不含 config/data） |
 | `bili-ask-20261017-1917.bundle` | Git 完整历史 bundle，可 clone 恢复 |
+| `dsh-debug-20261017/` | DSH profile 配置备份 + 旧调试脚本/会话记录（私有，勿公开） |
+
+`backup/README.md` 记录了每项的用途和恢复方式。整个 `backup/` 不会进入 Git。
 
 ---
 
