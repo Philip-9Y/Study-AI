@@ -154,6 +154,7 @@ python tests/render_screenshots.py
 
 ## 开发者文档
 
+- [项目文件清单](docs/PROJECT_INVENTORY.md)：每个目录/文件的作用、公开与私有边界、备份说明
 - [架构说明](docs/ARCHITECTURE.md)：进程/线程模型、模块职责、数据流、数据库、扩展点
 - [源码阅读指南](docs/READING_GUIDE.md)：阅读顺序、断点/调试、三条调用链、练习任务
 - [系统学习路线](docs/LEARNING_PATH.md)：8 周计划、底层知识地图、官方文档与实验
