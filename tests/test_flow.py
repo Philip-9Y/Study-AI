@@ -218,6 +218,19 @@ class FlowTest(unittest.TestCase):
         self.assertIn("get_current_time", meta)
         self.assertIn("tool_call", meta)
 
+    def test_length_limit_auto_continuation(self) -> None:
+        self.llm.answers = [
+            {"role": "assistant", "content": "前半段内容。", "_finish_reason": "length"},
+            {"role": "assistant", "content": "后半段内容。", "_finish_reason": "stop"},
+        ]
+        self.controller.send_text("", "请写一个很长的回答")
+        sid = self.store.list_sessions()[0]["id"]
+        self._pump(sid)
+        message = self.store.get_messages(sid)[-1]
+        self.assertEqual(message["role"], "assistant")
+        self.assertEqual(message["content"], "前半段内容。后半段内容。")
+        self.assertNotIn("长度上限", message["content"])
+
     def test_navigation_back_and_new_chat(self) -> None:
         sid = self.store.create_session("导航测试")
         self.store.add_message(sid, "user", "你好")

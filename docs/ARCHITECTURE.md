@@ -96,7 +96,7 @@ Study-AI/
 │   ├── agent_pane.py          # 旧 Agent 任务页（新 UI 不用）
 │   └── answer_panel.py        # 旧浮动回答面板（新 UI 不用）
 ├── plugins/study_notes/       # 内置示例插件
-├── tests/                     # 50 项单元 + 流程测试
+├── tests/                     # 52 项单元 + 流程测试
 ├── assets/                    # 图标、截图
 ├── data/                      # 运行时数据（gitignore）
 ├── config.json                # 配置（gitignore，含 API Key）

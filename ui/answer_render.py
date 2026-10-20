@@ -30,7 +30,7 @@ LINK = "#2563eb"
 
 _TAG_STYLE = (
     "font-family:'Microsoft YaHei UI','Segoe UI',sans-serif;"
-    f"color:{TEXT_COLOR};font-size:13px;line-height:1.6;"
+    f"color:{TEXT_COLOR};font-size:14px;line-height:1.75;"
 )
 
 _INLINE_MATH = re.compile(r"(?<!\$)\$([^$\n]+?)\$(?!\$)")
@@ -82,6 +82,57 @@ _UNICODE_MAP = {
     r"\Omega": "Ω",
     r"\Theta": "Θ",
 }
+
+
+def _repair_incomplete(text: str) -> tuple[str, bool]:
+    """清理被截断回答末尾未闭合的 Markdown/LaTeX 标记。
+
+    模型被 max_tokens 截断时，常见尾巴是 ``**``、``$``、``$\\`` 或未闭合代码块。
+    直接显示会留下大量原始标记，这里做最小修复；返回 (文本, 是否修复过)。
+    """
+    repaired = False
+    text = text.rstrip()
+
+    # 未闭合代码块：从最后一个 ``` 截断
+    if text.count("```") % 2:
+        text = text[: text.rfind("```")].rstrip()
+        repaired = True
+
+    # 未闭合的粗体 **
+    if text.count("**") % 2:
+        index = text.rfind("**")
+        text = (text[:index] + text[index + 2 :]).rstrip()
+        repaired = True
+
+    # 未闭合的行内/块级公式：找最后一个未转义的 $
+    dollar_positions: list[int] = []
+    escaped = False
+    for index, char in enumerate(text):
+        if char == "\\" and not escaped:
+            escaped = True
+            continue
+        if char == "$" and not escaped:
+            dollar_positions.append(index)
+        escaped = False
+    if len(dollar_positions) % 2:
+        text = text[: dollar_positions[-1]].rstrip()
+        repaired = True
+
+    # 截断处可能留下孤立反斜杠
+    if text.endswith("\\"):
+        text = text[:-1].rstrip()
+        repaired = True
+
+    return text, repaired
+
+
+def _render_incomplete_warning() -> str:
+    return (
+        '<div style="margin-top:8px;padding:6px 10px;border-radius:8px;'
+        'background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:12px;">'
+        "⚠️ 这条回答在长度限制处中断，已自动清理不完整格式；建议让它继续写或重新提问。"
+        "</div>"
+    )
 
 
 def _unicode_math(latex: str) -> str:
@@ -158,16 +209,24 @@ def _math_image(latex: str, display: bool, _env_guard: bool = False) -> str | No
             return environment
 
     latex = _normalize_latex(latex)
-    key = hashlib.sha1(f"light:{TEXT_COLOR}:{display}:{latex}".encode("utf-8")).hexdigest()
+    key = hashlib.sha1(
+        f"light-v2-300:{TEXT_COLOR}:{display}:{latex}".encode("utf-8")
+    ).hexdigest()
     path = MATH_CACHE / f"{key}.png"
     if not path.exists():
         try:
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             from matplotlib.figure import Figure
 
-            figure = Figure(dpi=200)
+            figure = Figure(dpi=300)
             figure.patch.set_alpha(0)
-            figure.text(0, 0, f"${latex}$", fontsize=16 if display else 14, color=TEXT_COLOR)
+            figure.text(
+                0,
+                0,
+                f"${latex}$",
+                fontsize=20 if display else 17,
+                color=TEXT_COLOR,
+            )
             canvas = FigureCanvasAgg(figure)
             canvas.draw()
             figure.savefig(path, transparent=True, bbox_inches="tight", pad_inches=0.04)
@@ -182,16 +241,17 @@ def _math_image(latex: str, display: bool, _env_guard: bool = False) -> str | No
     if height <= 0:
         return None
 
-    target_height = 30 if display else 20
+    target_height = 36 if display else 25
     target_width = max(1, round(width * target_height / height))
-    if target_width > 720:
-        target_height = max(12, round(target_height * 720 / target_width))
-        target_width = 720
+    if target_width > 820:
+        target_height = max(14, round(target_height * 820 / target_width))
+        target_width = 820
 
     data = base64.b64encode(path.read_bytes()).decode("ascii")
     return (
         f'<img src="data:image/png;base64,{data}" '
-        f'width="{target_width}" height="{target_height}" />'
+        f'width="{target_width}" height="{target_height}" '
+        'style="vertical-align:middle;" />'
     )
 
 
@@ -260,6 +320,7 @@ def render_answer(text: str) -> str:
         return f"CODESPAN{len(inline_codes) - 1}TOKEN"
 
     source = re.sub(r"`([^`\n]+)`", stash_inline_code, source)
+    source, repaired_incomplete = _repair_incomplete(source)
 
     def stash_display(match: re.Match) -> str:
         latex = match.group(1) or match.group(2) or ""
@@ -304,5 +365,7 @@ def render_answer(text: str) -> str:
                   'background:#f7f9fc;padding:6px 10px;color:%s;">' % MUTED, body)
     body = re.sub(r"<a href=", f'<a style="color:{LINK};" href=', body)
     body = re.sub(r"<hr\s*/?>", '<hr style="border:1px solid #e3e7ef;" />', body)
+    if repaired_incomplete:
+        body += _render_incomplete_warning()
 
     return f'<div style="{_TAG_STYLE}">{body}</div>'

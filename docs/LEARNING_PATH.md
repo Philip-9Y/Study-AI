@@ -338,7 +338,7 @@
 
 ### 对应源码/工具
 
-- `tests/`：50 项测试；
+- `tests/`：52 项测试；
 - `data/app.log`：日志；
 - `.gitignore`：排除 config/data；
 - `README.md`：使用文档；

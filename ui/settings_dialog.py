@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QSpinBox,
+    QTextEdit,
     QVBoxLayout,
 )
 
@@ -80,7 +81,7 @@ class SettingsDialog(QDialog):
         self.tokens = QSpinBox()
         self.tokens.setRange(256, 8192)
         self.tokens.setSingleStep(100)
-        self.tokens.setValue(int(config.data.get("max_tokens", 1500)))
+        self.tokens.setValue(int(config.data.get("max_tokens", 4096)))
         form.addRow("最大回复 tokens", self.tokens)
 
         self.temp = QDoubleSpinBox()
@@ -103,6 +104,14 @@ class SettingsDialog(QDialog):
             "开启后模型会先输出思维链。截图快问快答建议关闭，否则可能长时间无正文。"
         )
         form.addRow("", self.thinking)
+
+        self.note_template = QTextEdit()
+        self.note_template.setPlainText(config.note_template)
+        self.note_template.setFixedHeight(130)
+        self.note_template.setToolTip(
+            "点「笔记 → 新建」会用这个模板；Agent 记笔记时也会按这个结构组织。"
+        )
+        form.addRow("笔记模板", self.note_template)
 
         data_row = QHBoxLayout()
         data_label = QLabel(str(DATA_DIR))
@@ -192,5 +201,6 @@ class SettingsDialog(QDialog):
         self.config.data["save_captures"] = bool(self.save_caps.isChecked())
         self.config.data["pet_enabled"] = bool(self.pet_enabled.isChecked())
         self.config.data["thinking"] = bool(self.thinking.isChecked())
+        self.config.data["note_template"] = self.note_template.toPlainText().strip()
         self.config.save()
         self.accept()

@@ -17,11 +17,15 @@ DEFAULTS = {
     "api_key": "",
     "base_url": "https://api.deepseek.com",
     "model": "deepseek-flash",
-    "max_tokens": 1500,
+    "max_tokens": 4096,
     "temperature": 0.6,
     "save_captures": True,
     "thinking": False,
     "hotkey_capture": "Ctrl+Alt+Q",
+    "note_template": (
+        "## 来源\n\n## 核心结论\n\n## 关键公式 / 推导\n\n"
+        "## 易错点\n\n## 我的理解\n\n## 待复习\n"
+    ),
 }
 
 
@@ -60,3 +64,7 @@ class Config:
     @property
     def model(self) -> str:
         return str(self.data.get("model") or DEFAULTS["model"])
+
+    @property
+    def note_template(self) -> str:
+        return str(self.data.get("note_template") or DEFAULTS["note_template"])

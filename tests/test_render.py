@@ -54,6 +54,12 @@ class AnswerRenderTest(unittest.TestCase):
         self.assertTrue(html)
         self.assertIn("<div", html)
 
+    def test_incomplete_markdown_is_cleaned(self) -> None:
+        html = render_answer("1. **$f(n)$ 的指数要与 $\\")
+        self.assertNotIn("**", html)
+        self.assertNotIn("$\\", html)
+        self.assertIn("长度限制", html)
+
     def test_stream_text_removes_latex(self) -> None:
         text = render_stream_text(r"公式 $\frac{a}{b}$ 和 \(x^2\)，还有 $$n^2$$")
         self.assertNotIn(r"\frac", text)

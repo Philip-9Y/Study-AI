@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from core.config import Config
 from core.store import Store
 from ui.utils import elide, format_time
 
@@ -30,9 +31,10 @@ class NotesPane(QWidget):
     changed = Signal()
     back_requested = Signal()
 
-    def __init__(self, store: Store, parent=None) -> None:
+    def __init__(self, store: Store, config: Config | None = None, parent=None) -> None:
         super().__init__(parent)
         self.store = store
+        self.config = config
         self._current_id: str | None = None
         self._dirty = False
         self._auto_save = QTimer(self)
@@ -200,8 +202,16 @@ class NotesPane(QWidget):
     def new_note(self) -> None:
         self._clear_editor()
         self.list.clearSelection()
+        template = ""
+        if self.config is not None:
+            template = (self.config.note_template or "").strip()
+        if template:
+            self.content_edit.blockSignals(True)
+            self.content_edit.setPlainText(template)
+            self.content_edit.blockSignals(False)
+            self._dirty = True
         self.title_edit.setFocus()
-        self.status.setText("新笔记（保存后创建）")
+        self.status.setText("新笔记：已按你的模板填写，保存后创建")
 
     def save_note(self) -> None:
         title = self.title_edit.text().strip() or "未命名笔记"

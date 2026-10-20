@@ -129,6 +129,12 @@ class ConversationAgent(QObject):
                 system += (
                     "\n\n【用户的长期记忆（可能相关，参考即可；无关就忽略）】\n" + memory_text
                 )
+        template = (self.config.note_template or "").strip()
+        if template:
+            system += (
+                "\n\n【记笔记模板】当用户要求记笔记时，调用 create_note，content 按以下结构填写；"
+                "如果用户明确指定了格式或详略，以用户要求为准：\n" + template
+            )
 
         messages: list[dict] = [{"role": "system", "content": system}]
         image_b64: str | None = None
@@ -168,6 +174,9 @@ class ConversationAgent(QObject):
                 messages.append({"role": "user", "content": task})
             tools = self.registry.specs()
 
+            final_parts: list[str] = []
+            continuations = 0
+            empty_retries = 0
             for _ in range(self.max_steps):
                 if stop_event.is_set():
                     self.failed.emit(sid, "已停止")
@@ -175,17 +184,67 @@ class ConversationAgent(QObject):
                 message = client.chat_with_tools(messages, tools)
                 content = (message.get("content") or "").strip()
                 tool_calls = message.get("tool_calls") or []
+                finish_reason = message.get("_finish_reason")
 
                 if not tool_calls:
+                    if content:
+                        final_parts.append(content)
+
+                    # 被 max_tokens 截断：让模型从断点继续写，最多续写 2 次
+                    if finish_reason == "length" and continuations < 2:
+                        continuations += 1
+                        self.step.emit(
+                            sid, {"type": "assistant", "text": "回答较长，正在自动续写…"}
+                        )
+                        if content:
+                            messages.append({"role": "assistant", "content": content})
+                        messages.append(
+                            {
+                                "role": "user",
+                                "content": (
+                                    "上一条回答因长度限制被截断。请从截断处直接继续写，"
+                                    "不要重复已有内容，不要重新开头。"
+                                ),
+                            }
+                        )
+                        continue
+
+                    # 模型偶尔返回空正文：给一次明确的重试机会
+                    if not content and not final_parts and empty_retries < 1:
+                        empty_retries += 1
+                        messages.append(
+                            {
+                                "role": "user",
+                                "content": "请直接输出正文，不要留空；如果无法回答，请说明原因。",
+                            }
+                        )
+                        continue
+
+                    final_text = "".join(final_parts).strip()
+                    if not final_text:
+                        final_text = "（模型没有返回内容）"
+                    truncated = finish_reason == "length"
+                    if truncated:
+                        final_text += (
+                            "\n\n> ⚠️ 回答达到模型长度上限，可能未完整。"
+                            "可以在设置里调大「最大回复 tokens」。"
+                        )
                     elapsed = round(time.time() - started, 2)
+                    meta_data: dict = {"steps": steps}
+                    if truncated:
+                        meta_data["truncated"] = True
                     self.store.add_message(
                         sid,
                         "assistant",
-                        content or "（模型没有返回内容）",
+                        final_text,
                         elapsed_s=elapsed,
-                        meta=json.dumps({"steps": steps}, ensure_ascii=False) if steps else None,
+                        meta=(
+                            json.dumps(meta_data, ensure_ascii=False)
+                            if (steps or truncated)
+                            else None
+                        ),
                     )
-                    self.finished.emit(sid, content or "（模型没有返回内容）")
+                    self.finished.emit(sid, final_text)
                     return
 
                 if content:

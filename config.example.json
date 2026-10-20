@@ -2,8 +2,9 @@
   "api_key": "sk-在这里填你的-key",
   "base_url": "https://api.deepseek.com",
   "model": "deepseek-flash",
-  "max_tokens": 1500,
+  "max_tokens": 4096,
   "temperature": 0.6,
   "save_captures": true,
-  "thinking": false
+  "thinking": false,
+  "note_template": "## 来源\n\n## 核心结论\n\n## 关键公式 / 推导\n\n## 易错点\n\n## 我的理解\n\n## 待复习\n"
 }

@@ -138,7 +138,11 @@ class DeepSeekClient:
             raise LLMError(_http_error(resp.status_code, resp.text))
         data = resp.json()
         try:
-            return data["choices"][0]["message"]
+            choice = data["choices"][0]
+            message = choice["message"]
+            # 保留 finish_reason，供上层判断“是否被 max_tokens 截断”
+            message["_finish_reason"] = choice.get("finish_reason")
+            return message
         except (KeyError, IndexError, TypeError) as exc:
             raise LLMError(f"响应格式异常：{data}") from exc
 

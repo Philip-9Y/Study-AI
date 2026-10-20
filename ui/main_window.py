@@ -233,7 +233,7 @@ class MainWindow(QWidget):
     def _build_main(self) -> QWidget:
         self.stack = QStackedWidget()
         self.stack.addWidget(self._build_chat_page())
-        self.notes_pane = NotesPane(self.store)
+        self.notes_pane = NotesPane(self.store, self.config)
         self.notes_pane.back_requested.connect(self._back_to_chat)
         notes_page = QWidget()
         notes_layout = QVBoxLayout(notes_page)
