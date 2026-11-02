@@ -258,8 +258,10 @@ class NotesPane(QWidget):
             self._current_id = self.store.add_note(title, content, tags)
         self._dirty = False
         self._refresh_preview()
+        current_tab = self.tabs.currentIndex()
         self.status.setText(f"已保存 · {time.strftime('%H:%M:%S')}")
         self.refresh(self._current_id)
+        self.tabs.setCurrentIndex(current_tab)
         self.changed.emit()
 
     def delete_note(self) -> None:
