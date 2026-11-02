@@ -17,6 +17,8 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QSplitter,
+    QTabWidget,
+    QTextBrowser,
     QTextEdit,
     QVBoxLayout,
     QWidget,
@@ -24,6 +26,7 @@ from PySide6.QtWidgets import (
 
 from core.config import Config
 from core.store import Store
+from ui.answer_render import render_answer
 from ui.utils import elide, format_time
 
 
@@ -118,7 +121,32 @@ class NotesPane(QWidget):
             "在这里写笔记，或者让 Agent 在对话里说“记到笔记里”自动生成。"
         )
         self.content_edit.textChanged.connect(self._mark_dirty)
-        layout.addWidget(self.content_edit, 1)
+        self.content_edit.textChanged.connect(self._schedule_preview)
+
+        editor_page = QWidget()
+        editor_layout = QVBoxLayout(editor_page)
+        editor_layout.setContentsMargins(0, 0, 0, 0)
+        editor_layout.addWidget(self.content_edit)
+
+        preview_page = QWidget()
+        preview_layout = QVBoxLayout(preview_page)
+        preview_layout.setContentsMargins(0, 0, 0, 0)
+        self.preview = QTextBrowser()
+        self.preview.setObjectName("NotePreview")
+        self.preview.setOpenExternalLinks(True)
+        preview_layout.addWidget(self.preview)
+
+        self.tabs = QTabWidget()
+        self.tabs.setObjectName("NoteTabs")
+        self.tabs.addTab(editor_page, "编辑")
+        self.tabs.addTab(preview_page, "预览")
+        self.tabs.currentChanged.connect(lambda _index: self._refresh_preview())
+        layout.addWidget(self.tabs, 1)
+
+        self._preview_timer = QTimer(self)
+        self._preview_timer.setSingleShot(True)
+        self._preview_timer.setInterval(250)
+        self._preview_timer.timeout.connect(self._refresh_preview)
 
         footer = QHBoxLayout()
         self.status = QLabel("选择左侧笔记，或新建一条")
@@ -186,6 +214,8 @@ class NotesPane(QWidget):
         self.tags_edit.blockSignals(False)
         self.content_edit.blockSignals(False)
         self._dirty = False
+        self._refresh_preview()
+        self.tabs.setCurrentIndex(1)  # 打开已有笔记先看渲染结果，避免原始 Markdown 看起来像乱码
         self.status.setText(f"最后更新：{format_time(note['updated_at'])}")
 
     def _clear_editor(self) -> None:
@@ -198,10 +228,12 @@ class NotesPane(QWidget):
         self.content_edit.blockSignals(True)
         self.content_edit.clear()
         self.content_edit.blockSignals(False)
+        self._refresh_preview()
 
     def new_note(self) -> None:
         self._clear_editor()
         self.list.clearSelection()
+        self.tabs.setCurrentIndex(0)
         template = ""
         if self.config is not None:
             template = (self.config.note_template or "").strip()
@@ -210,6 +242,7 @@ class NotesPane(QWidget):
             self.content_edit.setPlainText(template)
             self.content_edit.blockSignals(False)
             self._dirty = True
+        self._refresh_preview()
         self.title_edit.setFocus()
         self.status.setText("新笔记：已按你的模板填写，保存后创建")
 
@@ -224,6 +257,7 @@ class NotesPane(QWidget):
         else:
             self._current_id = self.store.add_note(title, content, tags)
         self._dirty = False
+        self._refresh_preview()
         self.status.setText(f"已保存 · {time.strftime('%H:%M:%S')}")
         self.refresh(self._current_id)
         self.changed.emit()
@@ -257,6 +291,22 @@ class NotesPane(QWidget):
         body = f"# {title}\n\n{self.content_edit.toPlainText()}\n"
         Path(path).write_text(body, encoding="utf-8")
         self.status.setText(f"已导出：{path}")
+
+    def _schedule_preview(self) -> None:
+        if hasattr(self, "_preview_timer"):
+            self._preview_timer.start()
+
+    def _refresh_preview(self) -> None:
+        if not hasattr(self, "preview"):
+            return
+        content = self.content_edit.toPlainText()
+        if not content.strip():
+            self.preview.clear()
+            return
+        try:
+            self.preview.setHtml(render_answer(content))
+        except Exception:
+            self.preview.setPlainText(content)
 
     def _mark_dirty(self) -> None:
         self._dirty = True

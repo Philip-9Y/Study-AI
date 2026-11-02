@@ -277,6 +277,27 @@ QListWidget#NotesList::item {
 QListWidget#NotesList::item:selected { background: #eaf1ff; color: #1d4ed8; }
 QListWidget#NotesList::item:hover { background: #f4f6fa; }
 
+QTabWidget#NoteTabs::pane { border: none; background: transparent; }
+QTabWidget#NoteTabs QTabBar::tab {
+    background: transparent;
+    color: #6b7280;
+    padding: 5px 14px;
+    border: none;
+    border-bottom: 2px solid transparent;
+}
+QTabWidget#NoteTabs QTabBar::tab:selected {
+    color: #1d4ed8;
+    border-bottom: 2px solid #2563eb;
+    font-weight: 600;
+}
+QTextBrowser#NotePreview {
+    background: #fbfcfe;
+    border: 1px solid #e6eaf2;
+    border-radius: 10px;
+    padding: 12px;
+    selection-background-color: #bfdbfe;
+}
+
 QListWidget#PluginList { background: transparent; border: none; outline: none; }
 QWidget#PluginCard {
     background: #ffffff;

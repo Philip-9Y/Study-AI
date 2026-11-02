@@ -210,7 +210,7 @@ def _math_image(latex: str, display: bool, _env_guard: bool = False) -> str | No
 
     latex = _normalize_latex(latex)
     key = hashlib.sha1(
-        f"light-v2-300:{TEXT_COLOR}:{display}:{latex}".encode("utf-8")
+        f"light-v3-300-18:{TEXT_COLOR}:{display}:{latex}".encode("utf-8")
     ).hexdigest()
     path = MATH_CACHE / f"{key}.png"
     if not path.exists():
@@ -224,7 +224,7 @@ def _math_image(latex: str, display: bool, _env_guard: bool = False) -> str | No
                 0,
                 0,
                 f"${latex}$",
-                fontsize=20 if display else 17,
+                fontsize=18 if display else 16,
                 color=TEXT_COLOR,
             )
             canvas = FigureCanvasAgg(figure)
@@ -241,11 +241,11 @@ def _math_image(latex: str, display: bool, _env_guard: bool = False) -> str | No
     if height <= 0:
         return None
 
-    target_height = 36 if display else 25
+    target_height = 28 if display else 20
     target_width = max(1, round(width * target_height / height))
-    if target_width > 820:
-        target_height = max(14, round(target_height * 820 / target_width))
-        target_width = 820
+    if target_width > 780:
+        target_height = max(14, round(target_height * 780 / target_width))
+        target_width = 780
 
     data = base64.b64encode(path.read_bytes()).decode("ascii")
     return (

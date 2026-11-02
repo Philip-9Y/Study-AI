@@ -89,7 +89,7 @@ Study-AI/
 | --- | --- |
 | `__init__.py` | 空包标记 |
 | `main_window.py` | **主窗口**：无边框浅色标题栏、会话列表、对话流、输入框、页面切换 |
-| `notes_pane.py` | 笔记页：列表 + 编辑器 + 自动保存 + 导出 |
+| `notes_pane.py` | 笔记页：列表 + 编辑器 + Markdown/公式预览 + 自动保存 + 导出 |
 | `memory_pane.py` | 记忆页：卡片、启停、编辑、删除、整理入口 |
 | `answer_render.py` | Markdown/代码高亮/LaTeX 公式 → 富文本 HTML |
 | `theme.py` | 浅色 QSS 全局样式 |
