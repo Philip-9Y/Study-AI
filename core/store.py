@@ -129,6 +129,13 @@ class Store:
         row = self._conn.execute("SELECT * FROM sessions WHERE id = ?", (sid,)).fetchone()
         return dict(row) if row else None
 
+    def update_session_context(self, sid: str, context: str | None) -> None:
+        with self._lock, self._conn:
+            self._conn.execute(
+                "UPDATE sessions SET context = ? WHERE id = ?",
+                (context, sid),
+            )
+
     def list_sessions(self, query: str = "", limit: int = 300) -> list[dict]:
         query = (query or "").strip()
         if query:

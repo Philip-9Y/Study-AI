@@ -179,11 +179,33 @@ class Controller(QObject):
             if not self.config.api_key:
                 self.toast.emit("未配置 API Key，本次提问已取消")
                 return
+
+        active_sid = self.main.active_session_id()
+        if active_sid and self.agent.is_running(active_sid):
+            self.toast.emit("当前对话还在生成，请稍候再截图提问")
+            self.main.show_and_raise()
+            return
+
         when = datetime.now()
         image_rel = None
         if self.config.data.get("save_captures", True):
             image_rel = self.store.save_capture(crop, when)
         context_text = self._pending_context.prompt_text() if self._pending_context else ""
+
+        # 当前已有对话：把这次截图作为该对话的下一轮，保留上下文
+        if active_sid and self.store.get_session(active_sid):
+            if context_text:
+                self.store.update_session_context(active_sid, context_text)
+            self.store.add_message(
+                active_sid, "user", question, image_path=image_rel, when=when
+            )
+            self.main.open_session(active_sid)
+            self.main.show_and_raise()
+            self.history_changed.emit(active_sid)
+            self.agent.run(active_sid)
+            return
+
+        # 没有当前对话：新建会话
         sid = self.store.create_session(
             question, image_rel, self.config.model, when, context=context_text or None
         )

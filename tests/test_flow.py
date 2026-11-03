@@ -125,18 +125,39 @@ class FlowTest(unittest.TestCase):
         return sid
 
     # ------------------------------------------------------------------
-    def test_two_consecutive_screenshots(self) -> None:
+    def test_two_consecutive_screenshots_stay_in_same_session(self) -> None:
         self.questions[:] = ["第一个问题", "第二个问题"]
+        sid = self._capture()
+        self.assertEqual(self.store.session_count(), 1)
+        sid2 = self._capture()
+        self.assertEqual(self.store.session_count(), 1)
+        self.assertEqual(sid, sid2)
+
+        messages = self.store.get_messages(sid)
+        self.assertEqual(
+            [m["role"] for m in messages], ["user", "assistant", "user", "assistant"]
+        )
+        self.assertIn("这是回答", messages[1]["content"])
+        self.assertIsNotNone(messages[0]["image_path"])
+        self.assertIsNotNone(messages[2]["image_path"])
+        self.assertIsNotNone(self.store.get_session(sid)["image_path"])
+        built = self.agent._build_messages(sid)
+        user_messages = [m for m in built if m["role"] == "user"]
+        self.assertEqual(len(user_messages), 2)
+        self.assertIsInstance(user_messages[0]["content"], list)
+        self.assertIsInstance(user_messages[1]["content"], list)
+        self.assertEqual(len(list((self.tmp_path / "data" / "captures").rglob("*.png"))), 2)
+
+    def test_new_chat_then_screenshot_creates_new_session(self) -> None:
+        self.questions[:] = ["第一个问题", "新对话里的问题"]
         self._capture()
         self.assertEqual(self.store.session_count(), 1)
+        self.main.new_chat()
         self._capture()
         self.assertEqual(self.store.session_count(), 2)
         for session in self.store.list_sessions():
             messages = self.store.get_messages(session["id"])
             self.assertEqual([m["role"] for m in messages], ["user", "assistant"])
-            self.assertIn("这是回答", messages[1]["content"])
-            self.assertIsNotNone(session["image_path"])
-        self.assertEqual(len(list((self.tmp_path / "data" / "captures").rglob("*.png"))), 2)
 
     def test_text_agent_conversation_and_followup(self) -> None:
         self.controller.send_text("", "帮我查一下现在几点")

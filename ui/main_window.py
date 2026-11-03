@@ -408,6 +408,9 @@ class MainWindow(QWidget):
         self.history.blockSignals(False)
         self.history_empty.setVisible(len(sessions) == 0)
 
+    def active_session_id(self) -> str:
+        return self._active_sid
+
     def _on_history_clicked(self, item: QListWidgetItem) -> None:
         sid = item.data(Qt.UserRole)
         if sid:
@@ -424,9 +427,10 @@ class MainWindow(QWidget):
         for index, message in enumerate(self.store.get_messages(sid)):
             steps = _parse_steps(message.get("meta"))
             if message["role"] == "user":
-                self._add_user_bubble(
-                    message["content"], session.get("image_path") if index == 0 else None
+                image_path = message.get("image_path") or (
+                    session.get("image_path") if index == 0 else None
                 )
+                self._add_user_bubble(message["content"], image_path)
             elif message["role"] == "assistant":
                 self._add_assistant_bubble(message["content"], steps)
         self.title_label.setText(elide(session["question"], 54))

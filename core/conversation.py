@@ -137,17 +137,29 @@ class ConversationAgent(QObject):
             )
 
         messages: list[dict] = [{"role": "system", "content": system}]
-        image_b64: str | None = None
-        image_path = self.store.image_abspath(session.get("image_path"))
-        if image_path is not None:
-            try:
-                image_b64 = encode_image(Image.open(image_path))
-            except Exception:  # noqa: BLE001
-                LOGGER.exception("读取截图失败")
-        image_attached = False
+        image_cache: dict[str, str] = {}
+        first_user = True
         for row in rows:
             if row["role"] == "user":
-                if image_b64 and not image_attached:
+                # 每一条用户消息都可能带自己的截图；这样同一会话连续截图不会丢历史
+                image_rel = row.get("image_path") or (
+                    session.get("image_path") if first_user else None
+                )
+                first_user = False
+                image_b64: str | None = None
+                if image_rel:
+                    image_path = self.store.image_abspath(image_rel)
+                    if image_path is not None:
+                        cache_key = str(image_path)
+                        if cache_key not in image_cache:
+                            try:
+                                image_cache[cache_key] = encode_image(Image.open(image_path))
+                            except Exception:  # noqa: BLE001
+                                LOGGER.exception("读取截图失败: %s", image_path)
+                                image_cache[cache_key] = ""
+                        image_b64 = image_cache[cache_key] or None
+
+                if image_b64:
                     messages.append(
                         {
                             "role": "user",
@@ -157,7 +169,6 @@ class ConversationAgent(QObject):
                             ],
                         }
                     )
-                    image_attached = True
                 else:
                     messages.append({"role": "user", "content": row["content"]})
             elif row["role"] == "assistant":
